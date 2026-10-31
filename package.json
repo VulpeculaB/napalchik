@@ -1,0 +1,17 @@
+{
+  "name": "napalchik",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Напальчик — браузерная аркада о ловле попугаев",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "vite": "^6.1.0"
+  }
+}

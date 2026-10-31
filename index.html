@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6eddb" />
+    <meta
+      name="description"
+      content="Напальчик — весёлая игра о ловле попугаев. Лови пернатых на палец и набери как можно больше очков!"
+    />
+    <title>Напальчик — поймай попугая на палец!</title>
+    <link rel="icon" type="image/png" href="/assets/parrots/budgie-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Напальчик — на главную">
+          <span class="brand-mark" aria-hidden="true">
+            <img src="/assets/parrots/budgie-icon.png" alt="" />
+          </span>
+          <span>напальчик<span class="brand-dot">.</span></span>
+        </a>
+
+        <div class="top-actions">
+          <button class="icon-button" id="pauseButton" type="button" aria-label="Пауза" title="Пауза (P)" disabled>
+            <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
+            <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7V5Z" /></svg>
+          </button>
+          <button class="icon-button" id="soundButton" type="button" aria-label="Выключить звук" title="Звук">
+            <svg class="sound-on-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h4l5 4V6L9 10H5Z" /><path d="M17 9c1.5 1.5 1.5 4.5 0 6M19.5 6.5c3 3 3 8 0 11" /></svg>
+            <svg class="sound-off-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h4l5 4V6L9 10H5Z" /><path d="m17 10 5 5m0-5-5 5" /></svg>
+          </button>
+          <button class="help-button" id="helpButton" type="button" aria-label="Как играть">
+            <span aria-hidden="true">?</span><span class="help-label">Как играть</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="scoreboard" aria-label="Игровая статистика">
+        <div class="score-block">
+          <span class="stat-label">Попугаи</span>
+          <div class="score-line"><strong id="score">0</strong><span class="score-parrot" aria-hidden="true">↗</span></div>
+        </div>
+        <div class="lives-block">
+          <span class="stat-label">Запас терпения</span>
+          <div id="lives" class="lives" aria-label="3 попытки">
+            <span class="life">●</span><span class="life">●</span><span class="life">●</span>
+          </div>
+        </div>
+        <div class="best-block">
+          <span class="stat-label">Лучший результат</span>
+          <strong id="bestScore">0</strong>
+        </div>
+      </section>
+
+      <section class="game-shell" id="gameShell" aria-label="Игровое поле">
+        <canvas id="gameCanvas" width="550" height="310" aria-label="Ловите попугаев из четырёх клеток"></canvas>
+        <div class="canvas-grain" aria-hidden="true"></div>
+
+        <div class="level-pill" id="levelPill" aria-live="polite">
+          <span class="level-dot"></span><span id="levelText">Разминка крыльев</span>
+        </div>
+
+        <div class="screen start-screen" id="startScreen">
+          <div class="screen-card start-card">
+            <div class="eyebrow"><span></span> ПЕРНАТАЯ АРКАДА <span></span></div>
+            <h1>Ни одного<br />мимо <em>пальца!</em></h1>
+            <p>Попугаи уже на взводе. Лови каждого<br class="desktop-break" /> на палец и не давай им улететь.</p>
+            <button class="primary-button" id="startButton" type="button">
+              <span>Начать игру</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+            </button>
+            <div class="start-hint"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd><span>или касание игрового поля</span></div>
+          </div>
+        </div>
+
+        <div class="screen hidden" id="pauseScreen">
+          <div class="screen-card compact-card">
+            <span class="screen-icon" aria-hidden="true">Ⅱ</span>
+            <div class="eyebrow">ПЕРЕДЫШКА</div>
+            <h2>Попугаи<br />подождут</h2>
+            <p>Вернёшься — продолжим с того же места.</p>
+            <button class="primary-button" id="resumeButton" type="button"><span>Продолжить</span><span aria-hidden="true">→</span></button>
+            <button class="text-button" id="pauseRestartButton" type="button">Начать заново</button>
+          </div>
+        </div>
+
+        <div class="screen hidden" id="gameOverScreen">
+          <div class="screen-card compact-card gameover-card">
+            <span class="screen-icon feather-icon" aria-hidden="true">⌁</span>
+            <div class="eyebrow">ПОПУГАИ ПОБЕДИЛИ</div>
+            <h2 id="gameOverTitle">Вот это<br />переполох!</h2>
+            <p>Ты поймал</p>
+            <div class="final-score"><strong id="finalScore">0</strong><span id="finalWord">попугаев</span></div>
+            <div class="new-record hidden" id="newRecord">Новый рекорд!</div>
+            <button class="primary-button" id="restartButton" type="button"><span>Ещё разок</span><span aria-hidden="true">↻</span></button>
+            <button class="text-button" id="homeButton" type="button">На главную</button>
+          </div>
+        </div>
+
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </section>
+
+      <footer class="footer">
+        <span>1 попугай = 1 очко</span>
+        <span class="footer-feather" aria-hidden="true">⌁</span>
+        <span>Три промаха — конец игры</span>
+      </footer>
+    </main>
+
+    <dialog class="help-dialog" id="helpDialog" aria-labelledby="helpTitle">
+      <button class="dialog-close" id="closeHelpButton" type="button" aria-label="Закрыть">×</button>
+      <div class="eyebrow">КРАТКИЙ ИНСТРУКТАЖ</div>
+      <h2 id="helpTitle">Как играть</h2>
+      <p class="dialog-intro">Всё просто: правильная рука, правильная высота — и попугай на пальце.</p>
+      <div class="instruction-list">
+        <div class="instruction">
+          <span class="instruction-number">01</span>
+          <div><h3>Следи за клетками</h3><p>Попугай вылетит из одной из четырёх клеток — слева или справа, сверху или снизу.</p></div>
+        </div>
+        <div class="instruction">
+          <span class="instruction-number">02</span>
+          <div><h3>Подставь палец</h3><p>Используй стрелки, клавиши Q E A D или касание игрового поля. Пойманный попугай приносит 1 очко.</p></div>
+        </div>
+        <div class="instruction">
+          <span class="instruction-number">03</span>
+          <div><h3>Не зевай</h3><p>Три промаха завершат игру. С каждым очком пернатые становятся всё шустрее.</p></div>
+        </div>
+      </div>
+      <button class="primary-button dialog-ready" id="readyButton" type="button"><span>Всё понятно</span><span aria-hidden="true">✓</span></button>
+    </dialog>
+
+    <script type="module" src="game.js"></script>
+  </body>
+</html>
