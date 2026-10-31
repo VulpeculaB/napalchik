@@ -39,10 +39,10 @@ const ui = {
 };
 
 const LANES = [
-  { side: 'left', level: 'top', start: { x: 172, y: 158 }, control: { x: 298, y: 171 }, end: { x: 402, y: 273 }, cage: { x: 42, y: 67, w: 142, h: 153 }, color: '#e95e45' },
-  { side: 'right', level: 'top', start: { x: 928, y: 158 }, control: { x: 802, y: 171 }, end: { x: 698, y: 273 }, cage: { x: 916, y: 67, w: 142, h: 153 }, color: '#e95e45' },
-  { side: 'left', level: 'bottom', start: { x: 172, y: 327 }, control: { x: 298, y: 349 }, end: { x: 402, y: 416 }, cage: { x: 42, y: 237, w: 142, h: 153 }, color: '#e95e45' },
-  { side: 'right', level: 'bottom', start: { x: 928, y: 327 }, control: { x: 802, y: 349 }, end: { x: 698, y: 416 }, cage: { x: 916, y: 237, w: 142, h: 153 }, color: '#e95e45' },
+  { side: 'left', level: 'top', start: { x: 172, y: 158 }, control: { x: 298, y: 171 }, end: { x: 402, y: 273 }, cage: { x: 50, y: 78, w: 123, h: 147 }, color: '#e95e45' },
+  { side: 'right', level: 'top', start: { x: 928, y: 158 }, control: { x: 802, y: 171 }, end: { x: 698, y: 273 }, cage: { x: 927, y: 78, w: 123, h: 147 }, color: '#e95e45' },
+  { side: 'left', level: 'bottom', start: { x: 172, y: 327 }, control: { x: 298, y: 349 }, end: { x: 402, y: 416 }, cage: { x: 50, y: 260, w: 123, h: 147 }, color: '#e95e45' },
+  { side: 'right', level: 'bottom', start: { x: 928, y: 327 }, control: { x: 802, y: 349 }, end: { x: 698, y: 416 }, cage: { x: 927, y: 260, w: 123, h: 147 }, color: '#e95e45' },
 ];
 
 const BIRD_COLORS = [
@@ -57,6 +57,21 @@ const PERCHED_FRAMES = [[0, 4]];
 const parrotImages = {};
 const playerImage = new Image();
 playerImage.src = `${import.meta.env.BASE_URL}assets/player.png?v=4`;
+const cageImage = new Image();
+cageImage.src = `${import.meta.env.BASE_URL}assets/cage.png?v=1`;
+
+const CAGE_BODY_WIDTH = 146;
+const CAGE_LAUNCH_DELAY = 0.32;
+const CAGE_DOOR_DURATION = 1.4;
+// Отдельные области листа сохраняют корпус клетки неподвижным,
+// пока дверца увеличивает свою ширину при открывании.
+const CAGE_FRAMES = [
+  { sx: 50, sy: 30, sw: 170, sh: 232, bodyX: 18, bodyY: 48 },
+  { sx: 235, sy: 30, sw: 175, sh: 232, bodyX: 15, bodyY: 48 },
+  { sx: 420, sy: 30, sw: 170, sh: 232, bodyX: 13, bodyY: 48 },
+  { sx: 600, sy: 30, sw: 205, sh: 232, bodyX: 12, bodyY: 48 },
+  { sx: 790, sy: 30, sw: 222, sh: 232, bodyX: 11, bodyY: 48 },
+];
 
 const PLAYER_POSES = {
   neutral: { row: 0, column: 0, anchor: { x: 64, y: 137 }, scale: 2.8, bodyX: 64, facing: 'left' },
@@ -80,17 +95,6 @@ const LEVELS = [
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const lerp = (a, b, t) => a + (b - a) * t;
 const random = (min, max) => min + Math.random() * (max - min);
-
-function roundedRect(context, x, y, width, height, radius) {
-  const r = Math.min(radius, width / 2, height / 2);
-  context.beginPath();
-  context.moveTo(x + r, y);
-  context.arcTo(x + width, y, x + width, y + height, r);
-  context.arcTo(x + width, y + height, x, y + height, r);
-  context.arcTo(x, y + height, x, y, r);
-  context.arcTo(x, y, x + width, y, r);
-  context.closePath();
-}
 
 function ellipse(x, y, rx, ry, color, rotation = 0) {
   ctx.beginPath();
@@ -187,6 +191,7 @@ let score = 0;
 let lives = 3;
 let pose = 2;
 let birds = [];
+let cageDoorAges = LANES.map(() => null);
 let particles = [];
 let floaters = [];
 let caughtBird = null;
@@ -249,6 +254,7 @@ function resetWorld() {
   lives = 3;
   pose = 2;
   birds = [];
+  cageDoorAges = LANES.map(() => null);
   particles = [];
   floaters = [];
   caughtBird = null;
@@ -279,6 +285,7 @@ function showHome() {
   clearTimeout(endTimer);
   state = 'start';
   birds = [];
+  cageDoorAges = LANES.map(() => null);
   particles = [];
   floaters = [];
   caughtBird = null;
@@ -338,8 +345,10 @@ function spawnBird() {
   const available = LANES.map((_, index) => index).filter((index) => !birds.some((bird) => bird.lane === index));
   if (!available.length) return;
   const lane = available[Math.floor(Math.random() * available.length)];
+  cageDoorAges[lane] = 0;
   birds.push({
     lane,
+    age: 0,
     t: 0,
     speed: 0.255 + Math.min(score * 0.0036, 0.22) + random(-0.008, 0.008),
     palette: BIRD_COLORS[Math.floor(Math.random() * BIRD_COLORS.length)],
@@ -422,6 +431,11 @@ function update(dt) {
   shake = Math.max(0, shake - dt);
   flash = Math.max(0, flash - dt);
   updateEffects(dt);
+  for (let index = 0; index < cageDoorAges.length; index += 1) {
+    if (cageDoorAges[index] === null) continue;
+    cageDoorAges[index] += dt;
+    if (cageDoorAges[index] >= CAGE_DOOR_DURATION) cageDoorAges[index] = null;
+  }
 
   if (state !== 'playing') return;
 
@@ -435,7 +449,8 @@ function update(dt) {
 
   for (let i = birds.length - 1; i >= 0; i -= 1) {
     const bird = birds[i];
-    bird.t += bird.speed * dt;
+    bird.age += dt;
+    if (bird.age >= CAGE_LAUNCH_DELAY) bird.t += bird.speed * dt;
     if (bird.t >= 0.91 && bird.t < 1 && pose === bird.lane) {
       catchBird(bird);
       birds.splice(i, 1);
@@ -514,71 +529,48 @@ function drawBackground(time) {
   }
 }
 
+function cageDoorFrame(age) {
+  if (age === null || age < 0.1 || age >= 1.28) return 0;
+  if (age < 0.22 || age >= 1.14) return 1;
+  if (age < 0.36 || age >= 0.98) return 2;
+  if (age < 0.52 || age >= 0.82) return 3;
+  return 4;
+}
+
 function drawCage(lane, laneIndex, time) {
   const { x, y, w, h } = lane.cage;
   const isLeft = lane.side === 'left';
-  ctx.save();
+  const doorAge = cageDoorAges[laneIndex];
+  const frame = CAGE_FRAMES[cageDoorFrame(doorAge)];
+  const scale = w / CAGE_BODY_WIDTH;
 
-  ellipse(x + w / 2, y + h + 10, w * 0.55, 8, 'rgba(54,66,42,.12)');
-  roundedRect(ctx, x - 5, y + 7, w + 10, h - 4, 8);
-  ctx.fillStyle = '#66806a';
-  ctx.fill();
-  roundedRect(ctx, x, y + 10, w, h - 14, 5);
-  ctx.fillStyle = '#efdbac';
-  ctx.fill();
+  ellipse(x + w / 2, y + h + 9, w * 0.54, 7, 'rgba(54,66,42,.14)');
 
-  ctx.save();
-  roundedRect(ctx, x + 3, y + 13, w - 6, h - 20, 3);
-  ctx.clip();
-  ctx.fillStyle = 'rgba(118,102,65,.09)';
-  for (let stripe = -h; stripe < w; stripe += 22) {
-    ctx.beginPath();
-    ctx.moveTo(x + stripe, y + h);
-    ctx.lineTo(x + stripe + h, y);
-    ctx.lineTo(x + stripe + h + 8, y);
-    ctx.lineTo(x + stripe + 8, y + h);
-    ctx.fill();
+  // Сидящая птица уступает место вылетающей, а затем возвращается в клетку.
+  const isLaunching = birds.some((bird) => bird.lane === laneIndex);
+  if (!isLaunching && doorAge === null) {
+    const idleX = isLeft ? x + w * 0.42 : x + w * 0.58;
+    drawParrot(idleX, y + 78 + Math.sin(time * 2 + laneIndex) * 1.5, 0.62, isLeft ? 1 : -1, BIRD_COLORS[(laneIndex + 1) % BIRD_COLORS.length], time + laneIndex, false);
   }
-  ctx.restore();
 
-  // Жёрдочка и сидящая птица видны между прутьями.
-  line([{ x: x + 15, y: y + 107 }, { x: x + w - 13, y: y + 91 }], '#987746', 5);
-  const idleX = isLeft ? x + 54 : x + w - 54;
-  drawParrot(idleX, y + 75 + Math.sin(time * 2 + laneIndex) * 1.5, 0.72, isLeft ? 1 : -1, BIRD_COLORS[(laneIndex + 1) % BIRD_COLORS.length], time + laneIndex, false);
-
-  ctx.strokeStyle = '#496551';
-  ctx.lineWidth = 3;
-  for (let bar = x + 13; bar < x + w; bar += 18) {
-    ctx.beginPath();
-    ctx.moveTo(bar, y + 13);
-    ctx.lineTo(bar, y + h - 6);
-    ctx.stroke();
+  if (!cageImage.complete || !cageImage.naturalWidth) return;
+  ctx.save();
+  if (isLeft) ctx.translate(x, y);
+  else {
+    ctx.translate(x + w, y);
+    ctx.scale(-1, 1);
   }
-  ctx.fillStyle = '#3e5e4c';
-  ctx.fillRect(x - 4, y + 7, w + 8, 9);
-  ctx.fillRect(x - 4, y + h - 8, w + 8, 10);
-  ctx.fillStyle = '#82917a';
-  ctx.fillRect(x, y + 9, w, 2);
-
-  // Дверца, обращённая к центру игрового поля.
-  const doorX = isLeft ? x + w - 5 : x - 12;
-  roundedRect(ctx, doorX, y + 48, 17, 61, 5);
-  ctx.fillStyle = '#f0ddb1';
-  ctx.fill();
-  ctx.strokeStyle = '#3e5e4c';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  ellipse(isLeft ? doorX + 4 : doorX + 13, y + 75, 2.5, 2.5, '#e6b34b');
-
-  // Миска и болтающаяся бирка.
-  ctx.beginPath();
-  ctx.moveTo(x + 17, y + 124);
-  ctx.lineTo(x + 48, y + 124);
-  ctx.lineTo(x + 43, y + 139);
-  ctx.quadraticCurveTo(x + 32, y + 146, x + 22, y + 139);
-  ctx.closePath();
-  ctx.fillStyle = laneIndex < 2 ? '#dc7653' : '#d7a947';
-  ctx.fill();
+  ctx.drawImage(
+    cageImage,
+    frame.sx,
+    frame.sy,
+    frame.sw,
+    frame.sh,
+    -frame.bodyX * scale,
+    -frame.bodyY * scale,
+    frame.sw * scale,
+    frame.sh * scale,
+  );
   ctx.restore();
 }
 
@@ -734,6 +726,7 @@ function render(time) {
   drawCharacter(time);
 
   for (const bird of birds) {
+    if (bird.age < CAGE_LAUNCH_DELAY) continue;
     const position = pathPosition(bird.lane, clamp(bird.t, 0, 1));
     const lane = LANES[bird.lane];
     const hop = Math.abs(Math.sin(bird.t * 34 + bird.phase)) * 4;
