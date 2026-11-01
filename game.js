@@ -41,8 +41,8 @@ const ui = {
 const LANES = [
   { side: 'left', level: 'top', start: { x: 172, y: 158 }, control: { x: 298, y: 171 }, end: { x: 402, y: 273 }, cage: { x: 50, y: 78, w: 123, h: 147 }, color: '#e95e45' },
   { side: 'right', level: 'top', start: { x: 928, y: 158 }, control: { x: 802, y: 171 }, end: { x: 698, y: 273 }, cage: { x: 927, y: 78, w: 123, h: 147 }, color: '#e95e45' },
-  { side: 'left', level: 'bottom', start: { x: 172, y: 327 }, control: { x: 298, y: 349 }, end: { x: 402, y: 416 }, cage: { x: 50, y: 260, w: 123, h: 147 }, color: '#e95e45' },
-  { side: 'right', level: 'bottom', start: { x: 928, y: 327 }, control: { x: 802, y: 349 }, end: { x: 698, y: 416 }, cage: { x: 927, y: 260, w: 123, h: 147 }, color: '#e95e45' },
+  { side: 'left', level: 'bottom', start: { x: 172, y: 327 }, control: { x: 298, y: 349 }, end: { x: 402, y: 523 }, cage: { x: 50, y: 260, w: 123, h: 147 }, color: '#e95e45' },
+  { side: 'right', level: 'bottom', start: { x: 928, y: 327 }, control: { x: 802, y: 349 }, end: { x: 698, y: 523 }, cage: { x: 927, y: 260, w: 123, h: 147 }, color: '#e95e45' },
 ];
 
 const BIRD_COLORS = [
@@ -76,7 +76,7 @@ const CAGE_FRAMES = [
 const PLAYER_POSES = {
   neutral: { row: 0, column: 0, anchor: { x: 64, y: 137 }, scale: 2.8, bodyX: 64, facing: 'left' },
   upper: { row: 0, column: 4, anchor: { x: 30, y: 36 }, scale: 2.8, bodyX: 82, facing: 'left' },
-  lower: { row: 2, column: 3, anchor: { x: 107, y: 83 }, scale: 2.8, bodyX: 65, facing: 'right' },
+  lower: { row: 0, column: 7, anchor: { x: 95, y: 126 }, scale: 2.8, bodyX: 65, facing: 'right' },
 };
 
 for (const color of ['yellow', 'green', 'blue']) {

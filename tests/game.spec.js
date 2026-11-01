@@ -32,6 +32,20 @@ test('starts, catches a parrot, pauses and resumes', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('catches parrots from the lower level', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  // Select lane 2 (lower left) and its catching pose.
+  await page.addInitScript(() => { Math.random = () => 0.5; });
+  await page.goto('/');
+  await page.locator('#startButton').click();
+  await page.keyboard.press('KeyA');
+
+  await expect(page.locator('#score')).toHaveText('1', { timeout: 10_000 });
+  await expect(page.locator('.life.lost')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 test('three missed parrots end the game and restart resets the HUD', async ({ page }) => {
   await page.addInitScript(() => { Math.random = () => 0; });
   await page.goto('/');
