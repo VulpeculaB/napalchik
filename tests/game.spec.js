@@ -64,6 +64,21 @@ test('three missed parrots end the game and restart resets the HUD', async ({ pa
   await expect(page.locator('#pauseButton')).toBeEnabled();
 });
 
+test('CSP blocks inline scripts and invalid saved scores are discarded', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('napalchik-best', 'Infinity');
+  });
+  await page.goto('/');
+  await expect(page.locator('#bestScore')).toHaveText('0');
+
+  await page.evaluate(() => {
+    const script = document.createElement('script');
+    script.textContent = 'window.__inlineScriptRan = true;';
+    document.body.appendChild(script);
+  });
+  expect(await page.evaluate(() => window.__inlineScriptRan)).toBeUndefined();
+});
+
 test('mobile layout fits the viewport and canvas touches work without buttons', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));

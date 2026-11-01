@@ -115,7 +115,12 @@ function line(points, color, width, cap = 'round') {
 }
 
 function getSavedNumber(key) {
-  try { return Number(localStorage.getItem(key)) || 0; } catch { return 0; }
+  try {
+    const value = Number(localStorage.getItem(key));
+    return Number.isSafeInteger(value) && value >= 0 ? value : 0;
+  } catch {
+    return 0;
+  }
 }
 
 function getSavedBoolean(key) {
@@ -335,7 +340,11 @@ function endGame() {
   ui.finalScore.textContent = score;
   ui.finalWord.textContent = pluralizeParrots(score);
   ui.newRecord.classList.toggle('hidden', !isRecord);
-  ui.gameOverTitle.innerHTML = isRecord ? 'Вот это<br />мастерство!' : 'Вот это<br />переполох!';
+  ui.gameOverTitle.replaceChildren(
+    document.createTextNode('Вот это'),
+    document.createElement('br'),
+    document.createTextNode(isRecord ? 'мастерство!' : 'переполох!'),
+  );
   ui.gameOverScreen.classList.remove('hidden');
   ui.pauseButton.disabled = true;
   ui.pauseButton.classList.remove('is-paused');
