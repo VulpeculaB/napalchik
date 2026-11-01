@@ -9,6 +9,9 @@ test('starts, catches a parrot, pauses and resumes', async ({ page }) => {
   await page.goto('/');
 
   await expect(page).toHaveTitle(/Напальчик/);
+  await expect(page.locator('.lives-block .stat-label')).toHaveText('Жизнь');
+  await expect(page.locator('#lives .life svg')).toHaveCount(3);
+  await expect(page.locator('.level-pill, #toast')).toHaveCount(0);
   await expect(page.locator('#startScreen')).toBeVisible();
   await page.locator('#startButton').click();
   await expect(page.locator('#startScreen')).toBeHidden();

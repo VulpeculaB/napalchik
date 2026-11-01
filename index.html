@@ -48,9 +48,11 @@
           <div class="score-line"><strong id="score">0</strong><span class="score-parrot" aria-hidden="true">↗</span></div>
         </div>
         <div class="lives-block">
-          <span class="stat-label">Запас терпения</span>
-          <div id="lives" class="lives" aria-label="3 попытки">
-            <span class="life">●</span><span class="life">●</span><span class="life">●</span>
+          <span class="stat-label">Жизнь</span>
+          <div id="lives" class="lives" aria-label="Жизней: 3">
+            <span class="life" aria-hidden="true"><svg viewBox="0 0 12 9" shape-rendering="crispEdges"><path d="M2 0h3v1h2V0h3v1h2v5h-2v1H8v1H6V8H4V7H2V6H0V1h2Z" /></svg></span>
+            <span class="life" aria-hidden="true"><svg viewBox="0 0 12 9" shape-rendering="crispEdges"><path d="M2 0h3v1h2V0h3v1h2v5h-2v1H8v1H6V8H4V7H2V6H0V1h2Z" /></svg></span>
+            <span class="life" aria-hidden="true"><svg viewBox="0 0 12 9" shape-rendering="crispEdges"><path d="M2 0h3v1h2V0h3v1h2v5h-2v1H8v1H6V8H4V7H2V6H0V1h2Z" /></svg></span>
           </div>
         </div>
         <div class="best-block">
@@ -62,10 +64,6 @@
       <section class="game-shell" id="gameShell" aria-label="Игровое поле">
         <canvas id="gameCanvas" width="550" height="310" aria-label="Ловите попугаев из четырёх клеток"></canvas>
         <div class="canvas-grain" aria-hidden="true"></div>
-
-        <div class="level-pill" id="levelPill" aria-live="polite">
-          <span class="level-dot"></span><span id="levelText">Разминка крыльев</span>
-        </div>
 
         <div class="screen start-screen" id="startScreen">
           <div class="screen-card start-card">
@@ -93,7 +91,6 @@
 
         <div class="screen hidden" id="gameOverScreen">
           <div class="screen-card compact-card gameover-card">
-            <span class="screen-icon feather-icon" aria-hidden="true">⌁</span>
             <div class="eyebrow">ПОПУГАИ ПОБЕДИЛИ</div>
             <h2 id="gameOverTitle">Вот это<br />переполох!</h2>
             <p>Ты поймал</p>
@@ -104,12 +101,10 @@
           </div>
         </div>
 
-        <div class="toast" id="toast" role="status" aria-live="polite"></div>
       </section>
 
       <footer class="footer">
         <span>1 попугай = 1 очко</span>
-        <span class="footer-feather" aria-hidden="true">⌁</span>
         <span>Три промаха — конец игры</span>
       </footer>
     </main>

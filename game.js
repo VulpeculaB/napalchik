@@ -34,8 +34,6 @@ const ui = {
   finalWord: document.querySelector('#finalWord'),
   newRecord: document.querySelector('#newRecord'),
   gameOverTitle: document.querySelector('#gameOverTitle'),
-  levelText: document.querySelector('#levelText'),
-  toast: document.querySelector('#toast'),
 };
 
 const LANES = [
@@ -84,13 +82,6 @@ for (const color of ['yellow', 'green', 'blue']) {
   image.src = `${import.meta.env.BASE_URL}assets/parrots/${color}.png?v=4`;
   parrotImages[color] = image;
 }
-
-const LEVELS = [
-  { at: 0, name: 'Разминка крыльев' },
-  { at: 15, name: 'Лёгкий переполох' },
-  { at: 35, name: 'Птичий час пик' },
-  { at: 60, name: 'Пернатый ураган' },
-];
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -204,8 +195,6 @@ let spawnTimer = 0;
 let elapsed = 0;
 let shake = 0;
 let flash = 0;
-let toastTimer = 0;
-let levelIndex = 0;
 let lastTimestamp = performance.now();
 let helpPausedGame = false;
 let endTimer = null;
@@ -217,34 +206,11 @@ const dust = Array.from({ length: 52 }, (_, index) => ({
   alpha: 0.025 + (index % 4) * 0.012,
 }));
 
-function currentLevel() {
-  let index = 0;
-  for (let i = 0; i < LEVELS.length; i += 1) {
-    if (score >= LEVELS[i].at) index = i;
-  }
-  return index;
-}
-
 function updateHud() {
   ui.score.textContent = score;
   ui.best.textContent = Math.max(bestScore, score);
   ui.lifeIcons.forEach((icon, index) => icon.classList.toggle('lost', index >= lives));
-  ui.lives.setAttribute('aria-label', `${lives} ${lives === 1 ? 'попытка' : 'попытки'}`);
-  const nextLevel = currentLevel();
-  if (nextLevel !== levelIndex) {
-    levelIndex = nextLevel;
-    ui.levelText.textContent = LEVELS[levelIndex].name;
-    showToast(LEVELS[levelIndex].name);
-  } else {
-    ui.levelText.textContent = LEVELS[levelIndex].name;
-  }
-}
-
-function showToast(message) {
-  ui.toast.textContent = message;
-  ui.toast.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => ui.toast.classList.remove('show'), 1600);
+  ui.lives.setAttribute('aria-label', `Жизней: ${lives}`);
 }
 
 function setPose(nextPose, withSound = false) {
@@ -267,7 +233,6 @@ function resetWorld() {
   elapsed = 0;
   shake = 0;
   flash = 0;
-  levelIndex = 0;
   bestAtStart = bestScore;
   updateHud();
 }
@@ -296,7 +261,6 @@ function showHome() {
   caughtBird = null;
   score = 0;
   lives = 3;
-  levelIndex = 0;
   updateHud();
   ui.startScreen.classList.remove('hidden');
   ui.pauseScreen.classList.add('hidden');
@@ -693,7 +657,7 @@ function drawEffects() {
     ctx.save();
     ctx.globalAlpha = 1 - progress;
     ctx.textAlign = 'center';
-    ctx.font = `700 ${floater.miss ? 20 : 27}px "Pixelify Sans", monospace`;
+    ctx.font = `700 ${floater.miss ? 20 : 27}px "Manrope", Arial, sans-serif`;
     ctx.fillStyle = floater.miss ? '#b54536' : '#fff9df';
     ctx.strokeStyle = floater.miss ? '#fff0d5' : '#42634e';
     ctx.lineWidth = 4;
