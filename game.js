@@ -69,7 +69,7 @@ const CAGE_FRAMES = [
   { sx: 50, sy: 30, sw: 170, sh: 232, bodyX: 18, bodyY: 48 },
   { sx: 235, sy: 30, sw: 175, sh: 232, bodyX: 15, bodyY: 48 },
   { sx: 420, sy: 30, sw: 170, sh: 232, bodyX: 13, bodyY: 48 },
-  { sx: 600, sy: 30, sw: 205, sh: 232, bodyX: 12, bodyY: 48 },
+  // Полностью открытая дверца без непрозрачного тёмного фона внутри.
   { sx: 790, sy: 30, sw: 222, sh: 232, bodyX: 11, bodyY: 48 },
 ];
 
@@ -532,9 +532,8 @@ function drawBackground(time) {
 function cageDoorFrame(age) {
   if (age === null || age < 0.1 || age >= 1.28) return 0;
   if (age < 0.22 || age >= 1.14) return 1;
-  if (age < 0.36 || age >= 0.98) return 2;
-  if (age < 0.52 || age >= 0.82) return 3;
-  return 4;
+  if (age < 0.36 || age >= 0.94) return 2;
+  return 3;
 }
 
 function drawCage(lane, laneIndex, time) {
